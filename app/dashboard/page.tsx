@@ -3,27 +3,15 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 
-type Perfil = {
-  nombre: string
-  condicion_salud: string
-}
+type Perfil = { nombre: string; condicion_salud: string }
 
 const condicionLabels: Record<string, string> = {
-  ninguna: 'Sin condición especial',
+  ninguna: 'Sin restricciones',
   diabetes: 'Diabetes',
   hipertension: 'Hipertensión',
   colesterol: 'Colesterol alto',
-  enfermedad_celiaca: 'Enfermedad celíaca',
+  enfermedad_celiaca: 'Celiaquía',
   otro: 'Otra condición'
-}
-
-const condicionColores: Record<string, string> = {
-  ninguna: 'bg-green-50 text-green-700 border-green-200',
-  diabetes: 'bg-blue-50 text-blue-700 border-blue-200',
-  hipertension: 'bg-red-50 text-red-700 border-red-200',
-  colesterol: 'bg-yellow-50 text-yellow-700 border-yellow-200',
-  enfermedad_celiaca: 'bg-purple-50 text-purple-700 border-purple-200',
-  otro: 'bg-gray-50 text-gray-700 border-gray-200'
 }
 
 export default function DashboardPage() {
@@ -36,40 +24,16 @@ export default function DashboardPage() {
     const cargarPerfil = async () => {
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
-
-      if (!user) {
-        router.push('/login')
-        return
-      }
-
-      // Intenta leer el perfil
-      const { data, error } = await supabase
-        .from('perfiles')
-        .select('nombre, condicion_salud')
-        .eq('id', user.id)
-        .single()
-
-      if (data) {
-        setPerfil(data)
-        setNombre(data.nombre)
-      } else {
-        // Si no hay perfil, usa el metadata del usuario
+      if (!user) { router.push('/login'); return }
+      const { data } = await supabase.from('perfiles').select('nombre, condicion_salud').eq('id', user.id).single()
+      if (data) { setPerfil(data); setNombre(data.nombre) }
+      else {
         const meta = user.user_metadata
         if (meta?.nombre) {
           setNombre(meta.nombre)
-          setPerfil({
-            nombre: meta.nombre,
-            condicion_salud: meta.condicion_salud ?? 'ninguna'
-          })
-          // Crea el perfil si no existe
-          await supabase.from('perfiles').upsert({
-            id: user.id,
-            nombre: meta.nombre,
-            condicion_salud: meta.condicion_salud ?? 'ninguna'
-          })
-        } else {
-          setNombre('cocinero')
-        }
+          setPerfil({ nombre: meta.nombre, condicion_salud: meta.condicion_salud ?? 'ninguna' })
+          await supabase.from('perfiles').upsert({ id: user.id, nombre: meta.nombre, condicion_salud: meta.condicion_salud ?? 'ninguna' })
+        } else setNombre('Chef')
       }
       setLoading(false)
     }
@@ -82,112 +46,106 @@ export default function DashboardPage() {
     router.push('/login')
   }
 
-  if (loading) {
-    return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f9fafb' }}>
-        <div style={{ color: '#9ca3af', fontSize: '14px' }}>Cargando tu perfil...</div>
-      </div>
-    )
-  }
+  if (loading) return (
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)' }}>
+      <p style={{ fontSize: '12px', color: 'var(--fg-light)', letterSpacing: '0.2em', textTransform: 'uppercase' }}>Cargando...</p>
+    </div>
+  )
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f9fafb', fontFamily: 'Georgia, serif' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
 
-      {/* Navbar */}
+      {/* Nav */}
       <nav style={{
-        background: '#fff', borderBottom: '1px solid #f0f0f0',
-        padding: '16px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between'
+        borderBottom: '1px solid var(--border)', padding: '20px 48px',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        position: 'sticky', top: 0, background: 'var(--bg)', zIndex: 10
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <span style={{ fontSize: '20px', fontWeight: '700', color: '#2d6a4f' }}>🌿 Sazonia</span>
-          <span style={{ color: '#d1d5db' }}>|</span>
-          <span style={{ fontSize: '13px', color: '#9ca3af' }}>Tu recetario inteligente</span>
+        <p style={{ fontFamily: 'var(--font-display)', fontSize: '22px', fontWeight: 400, color: 'var(--fg)', letterSpacing: '0.05em' }}>
+          Sazonia
+        </p>
+        <div style={{ display: 'flex', gap: '32px', alignItems: 'center' }}>
+          <button onClick={() => router.push('/recetas')} style={{ background: 'none', border: 'none', fontSize: '12px', color: 'var(--fg-muted)', cursor: 'pointer', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Recetas</button>
+          <button onClick={() => router.push('/ia-ingredientes')} style={{ background: 'none', border: 'none', fontSize: '12px', color: 'var(--fg-muted)', cursor: 'pointer', letterSpacing: '0.1em', textTransform: 'uppercase' }}>IA</button>
+          <button onClick={handleLogout} style={{ background: 'none', border: 'none', fontSize: '12px', color: 'var(--fg-light)', cursor: 'pointer', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Salir</button>
         </div>
-        <button
-          onClick={handleLogout}
-          style={{ fontSize: '13px', color: '#9ca3af', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'Georgia, serif' }}
-        >
-          Cerrar sesión
-        </button>
       </nav>
 
-      <div style={{ maxWidth: '900px', margin: '0 auto', padding: '40px 24px' }}>
-
-        {/* Saludo */}
-        <div style={{ marginBottom: '32px' }}>
-          <h1 style={{ fontSize: '28px', fontWeight: '700', color: '#111827', margin: '0 0 6px' }}>
-            ¡Hola, {nombre}! 👋
-          </h1>
-          <p style={{ color: '#6b7280', fontSize: '14px', margin: 0 }}>
-            ¿Qué quieres cocinar hoy?
+      {/* Hero */}
+      <div style={{ padding: '80px 48px 64px', borderBottom: '1px solid var(--border)' }}>
+        <div style={{ maxWidth: '900px' }}>
+          <p style={{ fontSize: '11px', fontWeight: 500, color: 'var(--fg-light)', letterSpacing: '0.25em', textTransform: 'uppercase', marginBottom: '20px' }}>
+            {perfil?.condicion_salud && perfil.condicion_salud !== 'ninguna'
+              ? condicionLabels[perfil.condicion_salud]
+              : 'Bienvenido de vuelta'}
           </p>
-          {perfil?.condicion_salud && perfil.condicion_salud !== 'ninguna' && (
-            <span style={{
-              display: 'inline-block', marginTop: '10px', fontSize: '12px',
-              fontWeight: '600', padding: '4px 12px', borderRadius: '20px',
-              background: '#f0fdf4', color: '#166534', border: '1px solid #bbf7d0'
-            }}>
-              🏥 {condicionLabels[perfil.condicion_salud]}
-            </span>
-          )}
+          <h1 style={{
+            fontFamily: 'var(--font-display)', fontSize: 'clamp(56px, 7vw, 96px)',
+            fontWeight: 300, color: 'var(--fg)', lineHeight: 1.0,
+            letterSpacing: '-0.03em', marginBottom: '32px'
+          }}>
+            Hola,<br />
+            <em style={{ fontStyle: 'italic', color: 'var(--accent-light)' }}>{nombre}.</em>
+          </h1>
+          <p style={{ fontSize: '16px', color: 'var(--fg-muted)', maxWidth: '480px', lineHeight: 1.7, fontWeight: 300 }}>
+            ¿Qué quieres cocinar hoy? Dinos qué tienes en casa o explora las recetas de la comunidad.
+          </p>
         </div>
+      </div>
 
-        {/* Cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '32px' }}>
-          {[
-            { emoji: '🤖', titulo: 'IA con ingredientes', desc: 'Dime qué tienes en tu cocina y te digo qué cocinar', ruta: '/ia-ingredientes' },
-            { emoji: '🍳', titulo: 'Explorar recetas', desc: 'Descubre recetas de la comunidad adaptadas a tu salud', ruta: '/recetas' },
-            { emoji: '✍️', titulo: 'Publicar receta', desc: 'Comparte tus recetas y gana puntos de la comunidad', ruta: '/recetas/nueva' },
-          ].map(card => (
-            <button
-              key={card.ruta}
-              onClick={() => router.push(card.ruta)}
-              style={{
-                background: '#fff', border: '1px solid #f0f0f0', borderRadius: '16px',
-                padding: '24px', textAlign: 'left', cursor: 'pointer', fontFamily: 'Georgia, serif',
-                transition: 'all .2s', boxShadow: 'none'
-              }}
-              onMouseEnter={e => {
-                (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 4px 20px rgba(0,0,0,0.08)'
-                ;(e.currentTarget as HTMLButtonElement).style.borderColor = '#bbf7d0'
-              }}
-              onMouseLeave={e => {
-                (e.currentTarget as HTMLButtonElement).style.boxShadow = 'none'
-                ;(e.currentTarget as HTMLButtonElement).style.borderColor = '#f0f0f0'
-              }}
-            >
-              <div style={{ fontSize: '32px', marginBottom: '12px' }}>{card.emoji}</div>
-              <h3 style={{ fontSize: '14px', fontWeight: '600', color: '#111827', margin: '0 0 6px' }}>{card.titulo}</h3>
-              <p style={{ fontSize: '13px', color: '#6b7280', margin: 0, lineHeight: '1.5' }}>{card.desc}</p>
-            </button>
-          ))}
-        </div>
-
-        {/* Banner IA */}
-        <div style={{
-          background: 'linear-gradient(135deg, #1a4731 0%, #40916c 100%)',
-          borderRadius: '16px', padding: '24px 28px',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px'
-        }}>
-          <div>
-            <h2 style={{ fontSize: '17px', fontWeight: '600', color: '#fff', margin: '0 0 4px' }}>
-              ¿Qué hay en tu cocina hoy?
-            </h2>
-            <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.8)', margin: 0 }}>
-              Escribe tus ingredientes y nuestra IA genera recetas personalizadas para ti
-            </p>
-          </div>
-          <button
-            onClick={() => router.push('/ia-ingredientes')}
+      {/* Acciones */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', padding: '0 48px' }}>
+        {[
+          {
+            num: '01', titulo: 'IA con ingredientes',
+            desc: 'Escribe lo que tienes en tu cocina y generamos recetas adaptadas a tu salud al instante.',
+            cta: 'Generar recetas', ruta: '/ia-ingredientes',
+            bg: 'var(--bg-dark)', color: 'var(--white)', goldNum: true
+          },
+          {
+            num: '02', titulo: 'Explorar recetas',
+            desc: 'Descubre recetas de la comunidad, filtradas por tu condición de salud.',
+            cta: 'Ver recetas', ruta: '/recetas',
+            bg: 'var(--surface)', color: 'var(--fg)', goldNum: false
+          },
+          {
+            num: '03', titulo: 'Publicar receta',
+            desc: 'Comparte tu receta favorita y gana 50 puntos de la comunidad.',
+            cta: 'Publicar', ruta: '/recetas/nueva',
+            bg: 'var(--bg)', color: 'var(--fg)', goldNum: false
+          },
+        ].map(card => (
+          <div
+            key={card.num}
             style={{
-              background: '#fff', color: '#2d6a4f', fontWeight: '600', fontSize: '14px',
-              padding: '10px 20px', borderRadius: '10px', border: 'none', cursor: 'pointer',
-              fontFamily: 'Georgia, serif', whiteSpace: 'nowrap'
+              background: card.bg, padding: '48px 40px',
+              borderRight: '1px solid var(--border)', borderBottom: '1px solid var(--border)',
+              display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
+              minHeight: '320px', cursor: 'pointer', transition: 'opacity .2s'
             }}
+            onClick={() => router.push(card.ruta)}
+            onMouseEnter={e => (e.currentTarget.style.opacity = '0.85')}
+            onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
           >
-            Probar ahora →
-          </button>
-        </div>
+            <div>
+              <p style={{ fontFamily: 'var(--font-display)', fontSize: '13px', color: card.goldNum ? 'var(--gold)' : 'var(--fg-light)', marginBottom: '32px', letterSpacing: '0.1em' }}>
+                {card.num}
+              </p>
+              <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '28px', fontWeight: 400, color: card.color, lineHeight: 1.2, marginBottom: '16px' }}>
+                {card.titulo}
+              </h3>
+              <p style={{ fontSize: '13px', color: card.goldNum ? 'rgba(255,255,255,0.5)' : 'var(--fg-muted)', lineHeight: 1.7, fontWeight: 300 }}>
+                {card.desc}
+              </p>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '32px' }}>
+              <p style={{ fontSize: '11px', fontWeight: 500, color: card.goldNum ? 'var(--gold)' : 'var(--fg)', letterSpacing: '0.15em', textTransform: 'uppercase' }}>
+                {card.cta}
+              </p>
+              <span style={{ color: card.goldNum ? 'var(--gold)' : 'var(--fg)', fontSize: '16px' }}>→</span>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   )
