@@ -1,0 +1,135 @@
+{
+  "address": "GiJpu4FQKM94Gqu5s9Ph9zGxnZHBNRUz7jiVxesUG7QG",
+  "metadata": {
+    "name": "salvia",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Registro on-chain de recetas de Salvia"
+  },
+  "instructions": [
+    {
+      "name": "actualizar_receta",
+      "discriminator": [88, 35, 180, 113, 252, 146, 95, 159],
+      "accounts": [
+        { "name": "receta", "writable": true },
+        { "name": "autor", "signer": true, "relations": ["receta"] }
+      ],
+      "args": [
+        { "name": "descripcion", "type": "string" },
+        { "name": "tiempo_minutos", "type": "u16" }
+      ]
+    },
+    {
+      "name": "cerrar_receta",
+      "discriminator": [252, 110, 102, 20, 112, 181, 158, 169],
+      "accounts": [
+        { "name": "receta", "writable": true },
+        { "name": "autor", "writable": true, "signer": true, "relations": ["receta"] }
+      ],
+      "args": []
+    },
+    {
+      "name": "crear_receta",
+      "discriminator": [9, 25, 252, 230, 235, 15, 82, 245],
+      "accounts": [
+        {
+          "name": "receta",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              { "kind": "const", "value": [114, 101, 99, 101, 116, 97] },
+              { "kind": "account", "path": "autor" },
+              { "kind": "arg", "path": "titulo" }
+            ]
+          }
+        },
+        { "name": "autor", "writable": true, "signer": true },
+        { "name": "system_program", "address": "11111111111111111111111111111111" }
+      ],
+      "args": [
+        { "name": "titulo", "type": "string" },
+        { "name": "descripcion", "type": "string" },
+        { "name": "tiempo_minutos", "type": "u16" },
+        { "name": "condicion_salud", "type": "string" }
+      ]
+    },
+    {
+      "name": "dar_like",
+      "discriminator": [94, 56, 49, 124, 130, 180, 93, 1],
+      "accounts": [
+        { "name": "receta", "writable": true },
+        {
+          "name": "like",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              { "kind": "const", "value": [108, 105, 107, 101] },
+              { "kind": "account", "path": "usuario" },
+              { "kind": "account", "path": "receta" }
+            ]
+          }
+        },
+        { "name": "usuario", "writable": true, "signer": true },
+        { "name": "system_program", "address": "11111111111111111111111111111111" }
+      ],
+      "args": []
+    },
+    {
+      "name": "quitar_like",
+      "discriminator": [175, 80, 92, 130, 46, 215, 22, 226],
+      "accounts": [
+        { "name": "receta", "writable": true, "relations": ["like"] },
+        { "name": "like", "writable": true },
+        { "name": "usuario", "writable": true, "signer": true, "relations": ["like"] }
+      ],
+      "args": []
+    }
+  ],
+  "accounts": [
+    { "name": "Like", "discriminator": [10, 133, 129, 201, 87, 218, 203, 222] },
+    { "name": "Receta", "discriminator": [57, 93, 126, 245, 23, 65, 24, 158] }
+  ],
+  "errors": [
+    { "code": 6000, "name": "TituloVacio", "msg": "El título no puede estar vacío." },
+    { "code": 6001, "name": "TituloMuyLargo", "msg": "El título no puede superar 32 bytes." },
+    { "code": 6002, "name": "DescripcionMuyLarga", "msg": "La descripción no puede superar 200 bytes." },
+    { "code": 6003, "name": "CondicionInvalida", "msg": "La condición de salud no es una de las admitidas." },
+    { "code": 6004, "name": "TiempoInvalido", "msg": "El tiempo de preparación debe estar entre 1 y 600 minutos." },
+    { "code": 6005, "name": "NoEresAutor", "msg": "Solo el autor puede modificar o cerrar esta receta." },
+    { "code": 6006, "name": "LikePropio", "msg": "El autor no puede dar like a su propia receta." },
+    { "code": 6007, "name": "NoEresDuenoDelLike", "msg": "Solo quien dio el like puede retirarlo." },
+    { "code": 6008, "name": "LikeDeOtraReceta", "msg": "El like no corresponde a esta receta." },
+    { "code": 6009, "name": "RecetaConLikes", "msg": "La receta tiene likes activos y no puede cerrarse." },
+    { "code": 6010, "name": "ContadorFueraDeRango", "msg": "El contador de likes quedó fuera de rango." }
+  ],
+  "types": [
+    {
+      "name": "Like",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          { "name": "usuario", "type": "pubkey" },
+          { "name": "receta", "type": "pubkey" },
+          { "name": "creado_en", "type": "i64" },
+          { "name": "bump", "type": "u8" }
+        ]
+      }
+    },
+    {
+      "name": "Receta",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          { "name": "autor", "type": "pubkey" },
+          { "name": "titulo", "type": "string" },
+          { "name": "descripcion", "type": "string" },
+          { "name": "tiempo_minutos", "type": "u16" },
+          { "name": "condicion_salud", "type": "string" },
+          { "name": "likes", "type": "u32" },
+          { "name": "creada_en", "type": "i64" },
+          { "name": "bump", "type": "u8" }
+        ]
+      }
+    }
+  ]
+}

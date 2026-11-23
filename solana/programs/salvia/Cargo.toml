@@ -1,0 +1,20 @@
+[package]
+name = "salvia"
+version = "0.1.0"
+description = "Programa Solana de Salvia — registro de recetas con autoridad y cierre condicionado"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "salvia"
+
+[features]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+cpi = ["no-entrypoint"]
+default = []
+idl-build = ["anchor-lang/idl-build"]
+
+[dependencies]
+anchor-lang = "0.30.1"
