@@ -12,5 +12,6 @@
 | [`02-explorer-crear-receta.jpg`](capturas/02-explorer-crear-receta.jpg) | Transacción `crear_receta` confirmada en Devnet (caso 1) |
 | [`03-explorer-rechazo-resumen.jpg`](capturas/03-explorer-rechazo-resumen.jpg) | Transacción `cerrar_receta` rechazada por el programa (caso 7) |
 | [`04-explorer-rechazo-logs.jpg`](capturas/04-explorer-rechazo-logs.jpg) | Logs del mismo rechazo: `Error Code: RecetaConLikes. Error Number: 6009` |
+| [`05-onchain-flujo-con-wallet.jpg`](capturas/05-onchain-flujo-con-wallet.jpg) | Recorrido en `/onchain` con una wallet conectada: crear, like propio rechazado (`LikePropio`), cierre con likes rechazado (`RecetaConLikes`), editar y cerrar, cada uno con su firma |
 
 Las capturas no muestran claves privadas ni datos personales.

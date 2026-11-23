@@ -90,8 +90,8 @@ async function enviar(wallet: Firmante, tx: Transaction): Promise<Resultado> {
 
 function errorDelPrograma(logs: string[]): { codigo?: string; mensaje: string } {
   for (const linea of logs) {
-    const anchor = linea.match(/Error Code: (\w+)\. Error Number: \d+\. Error Message: (.+?)\.?$/)
-    if (anchor) return { codigo: anchor[1], mensaje: `${anchor[2]}.` }
+    const anchor = linea.match(/Error Code: (\w+)\. Error Number: \d+\. Error Message: (.+)$/)
+    if (anchor) return { codigo: anchor[1], mensaje: `${anchor[2].replace(/\.+$/, '')}.` }
     if (linea.includes('already in use')) {
       return { codigo: 'CuentaExistente', mensaje: 'La cuenta ya existe: título repetido o like duplicado.' }
     }

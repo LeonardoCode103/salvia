@@ -51,14 +51,14 @@ Las transacciones se envían sin preflight, así que los rechazos del programa t
 1. **Datos y estado inicial:** likes=0, tiempo=50 min, descripción="Bajo en sodio, con calabaza y zanahoria"
 2. **Operación y resultado esperado:** actualizar_receta firmada por una wallet que no es el autor. Se espera el rechazo NoEresAutor.
 3. **Resultado observado:** likes=0, tiempo=50 min, descripción="Bajo en sodio, con calabaza y zanahoria". Los datos no cambiaron.
-4. **Firma o error:** `NoEresAutor` — Solo el autor puede modificar o cerrar esta receta.. · [5BGfRJYQqnd3y6vqgsa9DPGABty6thETEtQbLiphoUefocutMXpDpjzMUNynua3bjy2qzFbSxrQhFHGN3bm6nQsU](https://explorer.solana.com/tx/5BGfRJYQqnd3y6vqgsa9DPGABty6thETEtQbLiphoUefocutMXpDpjzMUNynua3bjy2qzFbSxrQhFHGN3bm6nQsU?cluster=devnet)
+4. **Firma o error:** `NoEresAutor` — Solo el autor puede modificar o cerrar esta receta. · [5BGfRJYQqnd3y6vqgsa9DPGABty6thETEtQbLiphoUefocutMXpDpjzMUNynua3bjy2qzFbSxrQhFHGN3bm6nQsU](https://explorer.solana.com/tx/5BGfRJYQqnd3y6vqgsa9DPGABty6thETEtQbLiphoUefocutMXpDpjzMUNynua3bjy2qzFbSxrQhFHGN3bm6nQsU?cluster=devnet)
 
 ## 5. Like a la propia receta
 
 1. **Datos y estado inicial:** likes=0, tiempo=50 min, descripción="Bajo en sodio, con calabaza y zanahoria"
 2. **Operación y resultado esperado:** dar_like firmado por el autor de la receta. Se espera el rechazo LikePropio.
 3. **Resultado observado:** likes=0, tiempo=50 min, descripción="Bajo en sodio, con calabaza y zanahoria". No se creó cuenta Like: true.
-4. **Firma o error:** `LikePropio` — El autor no puede dar like a su propia receta.. · [2H4p6e6AqFZxL4oBdQGSfWjMvBu8vfbT9MavmkDSBQfzJCA9iTsLngEAtVVgwV4UPjUTAvizoWhjbazVKQnLnefR](https://explorer.solana.com/tx/2H4p6e6AqFZxL4oBdQGSfWjMvBu8vfbT9MavmkDSBQfzJCA9iTsLngEAtVVgwV4UPjUTAvizoWhjbazVKQnLnefR?cluster=devnet)
+4. **Firma o error:** `LikePropio` — El autor no puede dar like a su propia receta. · [2H4p6e6AqFZxL4oBdQGSfWjMvBu8vfbT9MavmkDSBQfzJCA9iTsLngEAtVVgwV4UPjUTAvizoWhjbazVKQnLnefR](https://explorer.solana.com/tx/2H4p6e6AqFZxL4oBdQGSfWjMvBu8vfbT9MavmkDSBQfzJCA9iTsLngEAtVVgwV4UPjUTAvizoWhjbazVKQnLnefR?cluster=devnet)
 
 ## 6. Dar like (otra wallet)
 
@@ -73,14 +73,14 @@ Las transacciones se envían sin preflight, así que los rechazos del programa t
 1. **Datos y estado inicial:** likes=1, tiempo=50 min, descripción="Bajo en sodio, con calabaza y zanahoria"
 2. **Operación y resultado esperado:** cerrar_receta firmada por el autor mientras likes > 0. Se espera el rechazo RecetaConLikes.
 3. **Resultado observado:** likes=1, tiempo=50 min, descripción="Bajo en sodio, con calabaza y zanahoria". La cuenta y su Like se conservan.
-4. **Firma o error:** `RecetaConLikes` — La receta tiene likes activos y no puede cerrarse.. · [5R3yrdA7mE3WfnpNGFw1iQ4jr5R954wgGmef7v62VLEHxU1CPw2xEYJMRKQcZ53tuxBDEJr4EpjvdkpG3MkkGFmp](https://explorer.solana.com/tx/5R3yrdA7mE3WfnpNGFw1iQ4jr5R954wgGmef7v62VLEHxU1CPw2xEYJMRKQcZ53tuxBDEJr4EpjvdkpG3MkkGFmp?cluster=devnet)
+4. **Firma o error:** `RecetaConLikes` — La receta tiene likes activos y no puede cerrarse. · [5R3yrdA7mE3WfnpNGFw1iQ4jr5R954wgGmef7v62VLEHxU1CPw2xEYJMRKQcZ53tuxBDEJr4EpjvdkpG3MkkGFmp](https://explorer.solana.com/tx/5R3yrdA7mE3WfnpNGFw1iQ4jr5R954wgGmef7v62VLEHxU1CPw2xEYJMRKQcZ53tuxBDEJr4EpjvdkpG3MkkGFmp?cluster=devnet)
 
 ## 8. Quitar like pasando otra receta (combinación inválida)
 
 1. **Datos y estado inicial:** Receta 1: likes=1, tiempo=50 min, descripción="Bajo en sodio, con calabaza y zanahoria". Receta 2 (43TXUAnRtm8gdjeUaU9zrZk92a9XPycx5PKxbubTSobo): likes=0, tiempo=10 min, descripción="Desayuno de bajo índice glucémico". El Like pertenece a la receta 1.
 2. **Operación y resultado esperado:** quitar_like con el Like de la receta 1 y la cuenta de la receta 2. Se espera el rechazo LikeDeOtraReceta.
 3. **Resultado observado:** Receta 1: likes=1, tiempo=50 min, descripción="Bajo en sodio, con calabaza y zanahoria". Receta 2: likes=0, tiempo=10 min, descripción="Desayuno de bajo índice glucémico". Like sigue existiendo: true.
-4. **Firma o error:** `LikeDeOtraReceta` — El like no corresponde a esta receta.. · [vDM8iCn6gWfLHoCVB4hWzQZyTNqL78qXq5QYyYc3mdPLRG6npFjnJbgCfdwrEHRwq8NVRsYnaDSX1pqwZsJ7vL5](https://explorer.solana.com/tx/vDM8iCn6gWfLHoCVB4hWzQZyTNqL78qXq5QYyYc3mdPLRG6npFjnJbgCfdwrEHRwq8NVRsYnaDSX1pqwZsJ7vL5?cluster=devnet)
+4. **Firma o error:** `LikeDeOtraReceta` — El like no corresponde a esta receta. · [vDM8iCn6gWfLHoCVB4hWzQZyTNqL78qXq5QYyYc3mdPLRG6npFjnJbgCfdwrEHRwq8NVRsYnaDSX1pqwZsJ7vL5](https://explorer.solana.com/tx/vDM8iCn6gWfLHoCVB4hWzQZyTNqL78qXq5QYyYc3mdPLRG6npFjnJbgCfdwrEHRwq8NVRsYnaDSX1pqwZsJ7vL5?cluster=devnet)
 
 ## 9. Quitar like (quien lo dio)
 
@@ -94,7 +94,7 @@ Las transacciones se envían sin preflight, así que los rechazos del programa t
 1. **Datos y estado inicial:** likes=0, tiempo=50 min, descripción="Bajo en sodio, con calabaza y zanahoria"
 2. **Operación y resultado esperado:** cerrar_receta firmada por una wallet que no es el autor (likes = 0). Se espera el rechazo NoEresAutor.
 3. **Resultado observado:** likes=0, tiempo=50 min, descripción="Bajo en sodio, con calabaza y zanahoria". La cuenta se conserva.
-4. **Firma o error:** `NoEresAutor` — Solo el autor puede modificar o cerrar esta receta.. · [5RnQy4GtPEfe1Xv79Xf9A21vWtw5egonqvDcQFeCRPXPcss4gyCBgiuS494vdShzcezWjEiiQnU8ajMTK6oo1EUq](https://explorer.solana.com/tx/5RnQy4GtPEfe1Xv79Xf9A21vWtw5egonqvDcQFeCRPXPcss4gyCBgiuS494vdShzcezWjEiiQnU8ajMTK6oo1EUq?cluster=devnet)
+4. **Firma o error:** `NoEresAutor` — Solo el autor puede modificar o cerrar esta receta. · [5RnQy4GtPEfe1Xv79Xf9A21vWtw5egonqvDcQFeCRPXPcss4gyCBgiuS494vdShzcezWjEiiQnU8ajMTK6oo1EUq](https://explorer.solana.com/tx/5RnQy4GtPEfe1Xv79Xf9A21vWtw5egonqvDcQFeCRPXPcss4gyCBgiuS494vdShzcezWjEiiQnU8ajMTK6oo1EUq?cluster=devnet)
 
 ## 11. Cerrar receta sin likes (autor)
 

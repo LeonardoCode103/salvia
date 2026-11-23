@@ -147,7 +147,9 @@ Usa dos cuentas de la wallet (A y B), ambas con SOL de Devnet.
 7. Con B, pulsa **Quitar like**. Con A, pulsa **Cerrar** → la receta desaparece y la renta vuelve a A.
 
 La interfaz no bloquea ninguna de estas acciones: la decisión la toma el programa. Todas quedan
-en la sección **Transacciones de esta sesión**, con enlace al Explorer.
+en la sección **Transacciones de esta sesión**, con enlace al Explorer. En los casos de rechazo,
+la wallet puede advertir que la transacción fallará; al confirmarla igualmente, el rechazo queda
+registrado en Devnet con su firma.
 
 ### Recorrido automático en Devnet
 
@@ -155,17 +157,24 @@ en la sección **Transacciones de esta sesión**, con enlace al Explorer.
 pnpm evidencias
 ```
 
-Crea dos wallets de prueba en `.wallets/` (excluidas del repositorio), solicita SOL de Devnet,
-ejecuta los casos de la tabla siguiente y escribe el resultado en
+Crea dos wallets de prueba en `.wallets/` (excluidas del repositorio), ejecuta los casos de la
+tabla siguiente y escribe el resultado en
 [`evidencias/resultados-devnet.md`](evidencias/resultados-devnet.md), con los cuatro datos que
 pide cada caso: estado inicial, operación y resultado esperado, resultado observado en las
-cuentas, y firma o error. Si el airdrop está limitado, el script indica la dirección a la que
-hay que enviar SOL desde el faucet.
+cuentas, y firma o error.
+
+La wallet autora necesita unos 0.05 SOL de Devnet. El airdrop por RPC de Devnet está cerrado,
+así que si no tiene saldo el script muestra su dirección para pedirlo en
+[faucet.solana.com](https://faucet.solana.com); la segunda wallet se fondea desde la primera.
 
 ### Pruebas del programa
 
+Requieren Rust, Solana CLI y Anchor 0.30.1. Corren contra un validador local que levanta
+`anchor test`, sin gastar SOL de Devnet.
+
 ```bash
 cd solana
+npm install
 anchor test
 ```
 

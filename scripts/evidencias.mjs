@@ -60,7 +60,7 @@ async function enviar(firmante, tx) {
   }
   const linea = (detalle?.meta?.logMessages ?? []).find(l => l.includes('Error Code:'))
   const codigo = linea?.match(/Error Code: (\w+)/)?.[1] ?? 'desconocido'
-  const mensaje = linea?.match(/Error Message: (.+)$/)?.[1] ?? 'sin mensaje del programa'
+  const mensaje = linea?.match(/Error Message: (.+)$/)?.[1].replace(/\.+$/, '.') ?? 'sin mensaje del programa'
   return { ok: false, firma, codigo, mensaje }
 }
 

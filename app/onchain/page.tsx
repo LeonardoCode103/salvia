@@ -82,6 +82,8 @@ export default function OnChainPage() {
     setHistorial(h => [{ hora: new Date().toLocaleTimeString('es-MX'), operacion, resultado }, ...h])
     setPendiente(null)
     await recargar()
+    // El RPC público puede responder desde un nodo que aún no ve la transacción; se vuelve a leer.
+    if (resultado.ok) setTimeout(recargar, 3000)
     return resultado
   }
 
@@ -289,7 +291,7 @@ export default function OnChainPage() {
           <div style={{ padding: '48px 0 0' }}>
             <p style={eyebrow}>Transacciones de esta sesión</p>
             {historial.map((m, i) => (
-              <div key={i} style={{ display: 'grid', gridTemplateColumns: '72px 1fr auto', gap: '16px', padding: '14px 0', borderBottom: '1px solid var(--border)', alignItems: 'baseline' }}>
+              <div key={i} style={{ display: 'grid', gridTemplateColumns: '96px 1fr auto', gap: '16px', padding: '14px 0', borderBottom: '1px solid var(--border)', alignItems: 'baseline' }}>
                 <span style={meta}>{m.hora}</span>
                 <div>
                   <p style={{ fontSize: '14px', color: 'var(--fg)', fontWeight: 300 }}>{m.operacion}</p>
