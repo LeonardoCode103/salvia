@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 
-declare_id!("GiJpu4FQKM94Gqu5s9Ph9zGxnZHBNRUz7jiVxesUG7QG");
+declare_id!("43HQ86bvTfr6n5FLt2RiMBPzzCwAuPtyJSRCrrMcpmjY");
 
 /// El título es semilla de la PDA, así que su límite es el de una semilla: 32 bytes.
 pub const TITULO_MAX: usize = 32;

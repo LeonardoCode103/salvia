@@ -7,10 +7,10 @@ resolution = true
 skip-lint = false
 
 [programs.devnet]
-salvia = "GiJpu4FQKM94Gqu5s9Ph9zGxnZHBNRUz7jiVxesUG7QG"
+salvia = "43HQ86bvTfr6n5FLt2RiMBPzzCwAuPtyJSRCrrMcpmjY"
 
 [programs.localnet]
-salvia = "GiJpu4FQKM94Gqu5s9Ph9zGxnZHBNRUz7jiVxesUG7QG"
+salvia = "43HQ86bvTfr6n5FLt2RiMBPzzCwAuPtyJSRCrrMcpmjY"
 
 [registry]
 url = "https://api.apr.dev"
