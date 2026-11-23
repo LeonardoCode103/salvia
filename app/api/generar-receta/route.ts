@@ -1,4 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { pedirAGemini } from '@/lib/gemini'
+
+export const maxDuration = 60
 
 const condicionTexto: Record<string, string> = {
   ninguna: 'sin restricciones especiales de salud',
@@ -42,33 +45,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Escribe al menos un ingrediente' }, { status: 400 })
     }
 
-    const apiKey = process.env.GEMINI_API_KEY
     const condicion = condicionTexto[condicion_salud] ?? condicionTexto.ninguna
 
-    if (!apiKey || apiKey.startsWith('aqui_')) {
-      await new Promise(resolve => setTimeout(resolve, 1200))
-      return NextResponse.json({ recetas: recetasDemo, modo: 'demo' })
-    }
+    const texto = await pedirAGemini(PROMPT(condicion, ingredientes), 0.7)
+    if (!texto) return NextResponse.json({ recetas: recetasDemo, modo: 'demo' })
 
-    const geminiRes = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: PROMPT(condicion, ingredientes) }] }],
-          generationConfig: { temperature: 0.7, maxOutputTokens: 2500 },
-        }),
-      }
-    )
-
-    if (!geminiRes.ok) {
-      console.error('Gemini error:', await geminiRes.text())
-      return NextResponse.json({ recetas: recetasDemo, modo: 'demo' })
-    }
-
-    const data = await geminiRes.json()
-    const texto: string = data.candidates?.[0]?.content?.parts?.[0]?.text ?? ''
     const jsonText = texto.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
     const recetas = JSON.parse(jsonText)
 

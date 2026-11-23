@@ -1,4 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { pedirAGemini } from '@/lib/gemini'
+
+export const maxDuration = 60
 
 const DIAS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
 
@@ -26,11 +29,6 @@ const DEMO_PLAN = {
 export async function POST(req: NextRequest) {
   const { condicion_salud = 'ninguna' } = await req.json().catch(() => ({}))
 
-  const apiKey = process.env.GEMINI_API_KEY
-  if (!apiKey || apiKey.startsWith('aqui_')) {
-    return NextResponse.json({ plan: DEMO_PLAN, modo: 'demo' })
-  }
-
   const restriccion = condicion_salud !== 'ninguna'
     ? `IMPORTANTE: Todas las comidas deben ser aptas para personas con ${condicion_salud}. Evita ingredientes contraindicados.`
     : 'No hay restricciones dietéticas.'
@@ -55,20 +53,7 @@ Usa ingredientes comunes de México. Los nombres deben ser concisos (2-5 palabra
 Cada lista de ingredientes: solo los principales (3-6 ítems), en singular, sin cantidades.`
 
   try {
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { temperature: 0.7, maxOutputTokens: 2048 },
-        }),
-      }
-    )
-
-    const geminiData = await res.json()
-    const text = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text ?? ''
+    const text = (await pedirAGemini(prompt, 0.7)) ?? ''
     const jsonMatch = text.match(/\{[\s\S]*\}/)
     if (!jsonMatch) return NextResponse.json({ plan: DEMO_PLAN, modo: 'demo' })
 

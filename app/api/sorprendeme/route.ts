@@ -1,4 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { pedirAGemini } from '@/lib/gemini'
+
+export const maxDuration = 60
 
 const condicionTexto: Record<string, string> = {
   ninguna: 'sin restricciones especiales',
@@ -22,23 +25,6 @@ export async function POST(req: NextRequest) {
   const condicion = condicionTexto[condicion_salud] ?? condicionTexto.ninguna
   const { comida, ejemplo } = horaActual()
 
-  const apiKey = process.env.GEMINI_API_KEY
-  if (!apiKey || apiKey.startsWith('aqui_')) {
-    return NextResponse.json({
-      receta: {
-        nombre: 'Huevos revueltos con jitomate',
-        tiempo: '12 minutos',
-        porciones: 2,
-        dificultad: 'Muy fácil',
-        descripcion: 'Receta de ejemplo. Agrega tu clave Gemini para sorpresas reales.',
-        ingredientes: ['3 huevos', '1 jitomate', 'Cebolla', 'Sal'],
-        pasos: ['Pica el jitomate y cebolla.', 'Bate los huevos.', 'Sofríe cebolla y jitomate 3 min.', 'Agrega huevos y revuelve 2 min.'],
-        consejo: 'Receta sencilla y nutritiva.',
-      },
-      modo: 'demo',
-    })
-  }
-
   const prompt = `Eres chef mexicano experto en nutrición. El usuario tiene ${condicion}.
 Es hora de ${comida} (en México). Sugiere UNA receta sorpresa apropiada para esta hora (ej. ${ejemplo}).
 Usa ingredientes COMUNES de México (los que cualquiera tiene en casa).
@@ -56,19 +42,7 @@ Responde SOLO JSON válido, sin markdown:
 }`
 
   try {
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { temperature: 1.2, maxOutputTokens: 1500 },
-        }),
-      }
-    )
-    const data = await res.json()
-    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? ''
+    const text = (await pedirAGemini(prompt, 1.2)) ?? ''
     const json = text.match(/\{[\s\S]*\}/)?.[0]
     if (!json) throw new Error('no json')
     const receta = JSON.parse(json)
