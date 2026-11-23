@@ -62,17 +62,30 @@ async function enviar(wallet: Firmante, tx: Transaction): Promise<Resultado> {
     return { ok: false, mensaje: errorDeWallet(e) }
   }
 
-  const { value } = await connection.confirmTransaction(
-    { signature: firma, blockhash, lastValidBlockHeight },
-    'confirmed',
-  )
-  if (!value.err) return { ok: true, firma }
+  let fallo: unknown
+  try {
+    const { value } = await connection.confirmTransaction(
+      { signature: firma, blockhash, lastValidBlockHeight },
+      'confirmed',
+    )
+    fallo = value.err
+  } catch (e) {
+    // web3.js rechaza con el TransactionError (no un Error) cuando detecta el fallo por sondeo.
+    if (e instanceof Error) throw e
+    fallo = e
+  }
+  if (!fallo) return { ok: true, firma }
 
-  const detalle = await connection.getTransaction(firma, {
-    commitment: 'confirmed',
-    maxSupportedTransactionVersion: 0,
-  })
-  return { ok: false, firma, ...errorDelPrograma(detalle?.meta?.logMessages ?? []) }
+  let logs: string[] = []
+  for (let intento = 0; intento < 5 && logs.length === 0; intento++) {
+    if (intento) await new Promise(r => setTimeout(r, 1500))
+    const detalle = await connection.getTransaction(firma, {
+      commitment: 'confirmed',
+      maxSupportedTransactionVersion: 0,
+    })
+    logs = detalle?.meta?.logMessages ?? []
+  }
+  return { ok: false, firma, ...errorDelPrograma(logs) }
 }
 
 function errorDelPrograma(logs: string[]): { codigo?: string; mensaje: string } {

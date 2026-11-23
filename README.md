@@ -6,7 +6,8 @@ Track: Advanced.
 
 - **Ruta elegida:** proyecto propio.
 - **Program ID (Devnet):** [`43HQ86bvTfr6n5FLt2RiMBPzzCwAuPtyJSRCrrMcpmjY`](https://explorer.solana.com/address/43HQ86bvTfr6n5FLt2RiMBPzzCwAuPtyJSRCrrMcpmjY?cluster=devnet)
-- **Evidencias:** [`evidencias/resultados-devnet.md`](evidencias/resultados-devnet.md)
+- **Demo:** <https://salvia-recetas.vercel.app/onchain> (también se puede ejecutar en local, ver [Ejecución](#ejecución))
+- **Evidencias:** [`evidencias/resultados-devnet.md`](evidencias/resultados-devnet.md) (11 de 11 casos en Devnet, con firmas) y [capturas](evidencias/README.md)
 
 ## Propósito
 

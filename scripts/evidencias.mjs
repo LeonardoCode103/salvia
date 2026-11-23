@@ -34,15 +34,30 @@ const pdaReceta = (autor, titulo) =>
 const pdaLike = (usuario, receta) =>
   PublicKey.findProgramAddressSync([texto.encode('like'), usuario.toBytes(), receta.toBytes()], programId)[0]
 
+// El RPC público de Devnet limita las peticiones por segundo; se espacian las transacciones.
+const pausa = ms => new Promise(r => setTimeout(r, ms))
+
 async function enviar(firmante, tx) {
+  await pausa(Number(process.env.PAUSA_MS ?? 3000))
   const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('confirmed')
   tx.feePayer = firmante.publicKey
   tx.recentBlockhash = blockhash
   tx.sign(firmante)
   const firma = await connection.sendRawTransaction(tx.serialize(), { skipPreflight: true })
-  const { value } = await connection.confirmTransaction({ signature: firma, blockhash, lastValidBlockHeight }, 'confirmed')
-  if (!value.err) return { ok: true, firma }
-  const detalle = await connection.getTransaction(firma, { commitment: 'confirmed', maxSupportedTransactionVersion: 0 })
+  let fallo
+  try {
+    fallo = (await connection.confirmTransaction({ signature: firma, blockhash, lastValidBlockHeight }, 'confirmed')).value.err
+  } catch (e) {
+    // web3.js rechaza con el TransactionError (no un Error) cuando detecta el fallo por sondeo.
+    if (e instanceof Error) throw e
+    fallo = e
+  }
+  if (!fallo) return { ok: true, firma }
+  let detalle = null
+  for (let intento = 0; intento < 5 && !detalle; intento++) {
+    if (intento) await pausa(2000)
+    detalle = await connection.getTransaction(firma, { commitment: 'confirmed', maxSupportedTransactionVersion: 0 })
+  }
   const linea = (detalle?.meta?.logMessages ?? []).find(l => l.includes('Error Code:'))
   const codigo = linea?.match(/Error Code: (\w+)/)?.[1] ?? 'desconocido'
   const mensaje = linea?.match(/Error Message: (.+)$/)?.[1] ?? 'sin mensaje del programa'
@@ -284,7 +299,12 @@ const likeOtro = pdaLike(otro.publicKey, receta1)
   })
 }
 
-await enviar(autor, await program.methods.cerrarReceta().accountsPartial({ receta: receta2, autor: autor.publicKey }).transaction())
+// Estado final visible en /onchain: la receta 2 queda publicada con un like de la otra wallet.
+await enviar(otro, await program.methods
+  .darLike()
+  .accountsPartial({ receta: receta2, like: pdaLike(otro.publicKey, receta2), usuario: otro.publicKey, systemProgram: SystemProgram.programId })
+  .transaction())
+const estadoFinal = await leerReceta(receta2)
 
 const incorrectos = casos.filter(c => (c.esperaRechazo ? c.resultado.ok : c.resultado && !c.resultado.ok))
 
@@ -297,6 +317,7 @@ const md = [
   `- Wallet autora: \`${autor.publicKey.toBase58()}\``,
   `- Otra wallet: \`${otro.publicKey.toBase58()}\``,
   `- Casos correctos: ${casos.length - incorrectos.length} de ${casos.length}`,
+  `- Estado final: la receta [«${titulo2}»](${explorerCuenta(receta2.toBase58())}) queda publicada (${resumen(estadoFinal)}) y se puede ver en \`/onchain\`.`,
   '',
   'Las transacciones se envían sin preflight, así que los rechazos del programa también quedan registrados en Devnet con firma consultable.',
   '',

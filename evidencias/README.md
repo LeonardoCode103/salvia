@@ -1,18 +1,16 @@
 # Evidencias
 
-- `resultados-devnet.md`: generado por `pnpm evidencias`. Contiene cada caso con su estado
-  inicial, la operación, el resultado observado en las cuentas y la firma o el error, con enlaces
-  al Explorer de Devnet.
-- `capturas/`: capturas del recorrido manual en `/onchain`.
+- [`resultados-devnet.md`](resultados-devnet.md): generado por `pnpm evidencias`. Cada caso incluye
+  su estado inicial, la operación y el resultado esperado, el resultado observado en las cuentas
+  y la firma o el error, con enlace al Explorer de Devnet.
+
+## Capturas
 
 | Archivo | Qué muestra |
 |---|---|
-| `capturas/01-publicar.png` | Receta publicada y aviso con la transacción |
-| `capturas/02-editar.png` | Receta editada por su autor |
-| `capturas/03-no-autor.png` | Rechazo `NoEresAutor` desde otra wallet |
-| `capturas/04-like.png` | Receta con 1 like dado por otra wallet |
-| `capturas/05-cierre-con-likes.png` | Rechazo `RecetaConLikes` |
-| `capturas/06-cierre.png` | Receta cerrada tras quitar el like |
-| `capturas/07-explorer.png` | Una transacción en Solana Explorer (Devnet) |
+| [`01-onchain-lectura.jpg`](capturas/01-onchain-lectura.jpg) | `/onchain` leyendo del programa desplegado, sin wallet: la receta que deja el recorrido automático, con 1 like de otra wallet |
+| [`02-explorer-crear-receta.jpg`](capturas/02-explorer-crear-receta.jpg) | Transacción `crear_receta` confirmada en Devnet (caso 1) |
+| [`03-explorer-rechazo-resumen.jpg`](capturas/03-explorer-rechazo-resumen.jpg) | Transacción `cerrar_receta` rechazada por el programa (caso 7) |
+| [`04-explorer-rechazo-logs.jpg`](capturas/04-explorer-rechazo-logs.jpg) | Logs del mismo rechazo: `Error Code: RecetaConLikes. Error Number: 6009` |
 
-Las capturas no deben mostrar claves privadas ni datos personales.
+Las capturas no muestran claves privadas ni datos personales.
