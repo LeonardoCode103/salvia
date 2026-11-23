@@ -95,16 +95,16 @@ export default function NuevaRecetaPage() {
     <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
 
       {/* Nav */}
-      <nav style={{ borderBottom: '1px solid var(--border)', padding: '20px 48px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, background: 'var(--bg)', zIndex: 10 }}>
+      <nav className="top-nav" style={{ borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, background: 'var(--bg)', zIndex: 10 }}>
         <button onClick={() => router.push('/dashboard')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-display)', fontSize: '22px', fontWeight: 400, color: 'var(--fg)' }}>
-          Sazonia
+          Salvia
         </button>
         <button onClick={() => router.push('/recetas')} style={{ background: 'none', border: 'none', fontSize: '12px', color: 'var(--fg-light)', cursor: 'pointer', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
           Volver a recetas
         </button>
       </nav>
 
-      <div style={{ maxWidth: '720px', margin: '0 auto', padding: '64px 48px 80px' }}>
+      <div style={{ maxWidth: '720px', margin: '0 auto', padding: 'clamp(32px, 5vw, 64px) clamp(20px, 5vw, 48px) 80px' }}>
 
         {/* Header */}
         <div style={{ marginBottom: '64px' }}>
@@ -150,7 +150,7 @@ export default function NuevaRecetaPage() {
           </div>
 
           {/* Tiempo y porciones */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px' }}>
+          <div className="time-grid">
             <div>
               <label style={{ display: 'block', fontSize: '11px', fontWeight: 500, color: 'var(--fg-light)', letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: '16px' }}>
                 Tiempo de preparación

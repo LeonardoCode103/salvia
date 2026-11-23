@@ -61,7 +61,7 @@ export default function RecuperarPage() {
           <div style={{ textAlign: 'center', zIndex: 1, position: 'relative' }}>
             <div style={{ fontSize: '60px', marginBottom: '20px' }}>🌿</div>
             <h1 style={{ fontSize: '40px', fontWeight: '700', color: '#fff', margin: '0 0 14px', letterSpacing: '-1px' }}>
-              Sazonia
+              Salvia
             </h1>
             <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '15px', lineHeight: '1.7', maxWidth: '260px', margin: '0 auto' }}>
               No te preocupes, te ayudamos a recuperar el acceso a tu cuenta.

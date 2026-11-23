@@ -1,20 +1,49 @@
 'use client'
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { Suspense, useState, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { LoginSchema } from '@/lib/schemas'
 
+function friendlyError(msg: string): string {
+  if (msg === 'Failed to fetch' || msg.includes('fetch'))
+    return 'Sin conexión al servidor. Verifica tu conexión e intenta de nuevo.'
+  if (msg.toLowerCase().includes('invalid login') || msg.toLowerCase().includes('invalid credentials'))
+    return 'Email o contraseña incorrectos.'
+  if (msg.toLowerCase().includes('email not confirmed'))
+    return 'Confirma tu correo primero. Revisa tu bandeja de entrada.'
+  if (msg.toLowerCase().includes('too many'))
+    return 'Demasiados intentos. Espera unos minutos e intenta de nuevo.'
+  return msg
+}
+
 export default function LoginPage() {
+  return <Suspense fallback={null}><LoginForm /></Suspense>
+}
+
+function LoginForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [info, setInfo] = useState('')
   const [verPassword, setVerPassword] = useState(false)
   const [form, setForm] = useState({ email: '', password: '' })
+
+  useEffect(() => {
+    const mensaje = searchParams.get('mensaje')
+    if (mensaje === 'link_expirado')
+      setInfo('El enlace de confirmación expiró. Regístrate de nuevo o pide otro correo.')
+    else if (mensaje === 'link_invalido')
+      setInfo('El enlace no es válido. Intenta registrarte de nuevo.')
+    else if (mensaje === 'verificado')
+      setInfo('✓ Cuenta verificada. Inicia sesión para continuar.')
+  }, [searchParams])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
     setLoading(true)
+
     const result = LoginSchema.safeParse(form)
     if (!result.success) {
       const errores = result.error.flatten().fieldErrors
@@ -22,43 +51,41 @@ export default function LoginPage() {
       setLoading(false)
       return
     }
+
     const supabase = createClient()
-    const { error: authError } = await supabase.auth.signInWithPassword({ email: form.email, password: form.password })
-    if (authError) { setError('Email o contraseña incorrectos'); setLoading(false); return }
+    const { error: authError } = await supabase.auth.signInWithPassword({
+      email: form.email, password: form.password,
+    })
+
+    if (authError) {
+      setError(friendlyError(authError.message))
+      setLoading(false)
+      return
+    }
+
     router.push('/dashboard')
   }
 
   return (
-    <div style={{ minHeight: '100vh', display: 'grid', gridTemplateColumns: '1fr 1fr', background: 'var(--bg)' }}>
+    <div className="auth-layout" style={{ background: 'var(--bg)' }}>
 
-      {/* Panel izquierdo — Editorial */}
-      <div style={{
-        background: 'var(--bg-dark)', display: 'flex', flexDirection: 'column',
-        justifyContent: 'space-between', padding: '48px', position: 'relative', overflow: 'hidden'
-      }}>
-        {/* Textura de fondo */}
-        <div style={{
-          position: 'absolute', inset: 0, opacity: 0.03,
-          backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 40px, #fff 40px, #fff 41px), repeating-linear-gradient(90deg, transparent, transparent 40px, #fff 40px, #fff 41px)'
-        }} />
-
-        {/* Logo */}
+      {/* Panel izquierdo */}
+      <div
+        className="auth-panel-left"
+        style={{
+          background: 'var(--bg-dark)', display: 'flex', flexDirection: 'column',
+          justifyContent: 'space-between', padding: '48px', position: 'relative', overflow: 'hidden',
+        }}
+      >
+        <div style={{ position: 'absolute', inset: 0, opacity: 0.03, backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 40px, #fff 40px, #fff 41px), repeating-linear-gradient(90deg, transparent, transparent 40px, #fff 40px, #fff 41px)' }} />
         <div style={{ position: 'relative', zIndex: 1 }}>
-          <p style={{ fontFamily: 'var(--font-display)', fontSize: '28px', fontWeight: 300, color: 'var(--gold)', letterSpacing: '0.08em' }}>
-            Sazonia
-          </p>
+          <p style={{ fontFamily: 'var(--font-display)', fontSize: '28px', fontWeight: 300, color: 'var(--gold)', letterSpacing: '0.08em' }}>Salvia</p>
         </div>
-
-        {/* Headline central */}
         <div style={{ position: 'relative', zIndex: 1 }}>
           <p style={{ fontSize: '11px', fontWeight: 500, color: 'var(--gold)', letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: '24px' }}>
             Tu recetario inteligente
           </p>
-          <h1 style={{
-            fontFamily: 'var(--font-display)', fontSize: 'clamp(52px, 6vw, 80px)',
-            fontWeight: 300, color: 'var(--white)', lineHeight: 1.05,
-            letterSpacing: '-0.02em', marginBottom: '32px'
-          }}>
+          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(52px, 6vw, 80px)', fontWeight: 300, color: 'var(--white)', lineHeight: 1.05, letterSpacing: '-0.02em', marginBottom: '32px' }}>
             Cocina<br />
             <em style={{ fontStyle: 'italic', color: 'var(--gold)' }}>con</em><br />
             intención.
@@ -68,8 +95,6 @@ export default function LoginPage() {
             Recetas personalizadas para tu salud, generadas con inteligencia artificial a partir de lo que tienes en casa.
           </p>
         </div>
-
-        {/* Features */}
         <div style={{ position: 'relative', zIndex: 1, borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '32px' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '24px' }}>
             {[
@@ -86,10 +111,20 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* Panel derecho — Formulario */}
-      <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '48px 64px' }}>
-        <div style={{ maxWidth: '400px', width: '100%' }}>
+      {/* Panel derecho */}
+      <div
+        className="auth-panel-right"
+        style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '48px 64px' }}
+      >
+        {/* Mobile logo */}
+        <style>{`
+          @media (max-width: 767px) { .mobile-logo { display: block !important; } }
+        `}</style>
+        <p className="mobile-logo" style={{ fontFamily: 'var(--font-display)', fontSize: '24px', fontWeight: 300, color: 'var(--accent)', letterSpacing: '0.05em', marginBottom: '32px', display: 'none' }}>
+          Salvia
+        </p>
 
+        <div style={{ maxWidth: '400px', width: '100%' }}>
           <div style={{ marginBottom: '48px' }}>
             <p style={{ fontSize: '11px', fontWeight: 500, color: 'var(--fg-muted)', letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: '16px' }}>
               Iniciar sesión
@@ -101,25 +136,20 @@ export default function LoginPage() {
 
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
 
-            {/* Email */}
             <div>
               <label style={{ display: 'block', fontSize: '11px', fontWeight: 500, color: 'var(--fg-muted)', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '10px' }}>
                 Correo electrónico
               </label>
               <input
                 type="email" placeholder="tu@correo.com"
-                value={form.email} onChange={e => setForm({ ...form, email: e.target.value })}
-                style={{
-                  width: '100%', padding: '14px 0', border: 'none', borderBottom: '1.5px solid var(--border)',
-                  background: 'transparent', fontSize: '15px', color: 'var(--fg)', outline: 'none',
-                  transition: 'border-color .2s'
-                }}
+                value={form.email}
+                onChange={e => setForm({ ...form, email: e.target.value })}
+                style={{ width: '100%', padding: '14px 0', border: 'none', borderBottom: '1.5px solid var(--border)', background: 'transparent', fontSize: '15px', color: 'var(--fg)', outline: 'none', transition: 'border-color .2s' }}
                 onFocus={e => e.target.style.borderBottomColor = 'var(--fg)'}
                 onBlur={e => e.target.style.borderBottomColor = 'var(--border)'}
               />
             </div>
 
-            {/* Contraseña */}
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
                 <label style={{ fontSize: '11px', fontWeight: 500, color: 'var(--fg-muted)', letterSpacing: '0.15em', textTransform: 'uppercase' }}>
@@ -132,35 +162,39 @@ export default function LoginPage() {
               <div style={{ position: 'relative' }}>
                 <input
                   type={verPassword ? 'text' : 'password'} placeholder="••••••••"
-                  value={form.password} onChange={e => setForm({ ...form, password: e.target.value })}
-                  style={{
-                    width: '100%', padding: '14px 40px 14px 0', border: 'none',
-                    borderBottom: '1.5px solid var(--border)', background: 'transparent',
-                    fontSize: '15px', color: 'var(--fg)', outline: 'none', transition: 'border-color .2s'
-                  }}
+                  value={form.password}
+                  onChange={e => setForm({ ...form, password: e.target.value })}
+                  style={{ width: '100%', padding: '14px 60px 14px 0', border: 'none', borderBottom: '1.5px solid var(--border)', background: 'transparent', fontSize: '15px', color: 'var(--fg)', outline: 'none', transition: 'border-color .2s' }}
                   onFocus={e => e.target.style.borderBottomColor = 'var(--fg)'}
                   onBlur={e => e.target.style.borderBottomColor = 'var(--border)'}
                 />
-                <button type="button" onClick={() => setVerPassword(!verPassword)} style={{
-                  position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)',
-                  background: 'none', border: 'none', cursor: 'pointer', color: 'var(--fg-light)', fontSize: '12px',
-                  letterSpacing: '0.05em', textTransform: 'uppercase'
-                }}>
+                <button
+                  type="button"
+                  onClick={() => setVerPassword(!verPassword)}
+                  style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--fg-light)', fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase' }}
+                >
                   {verPassword ? 'Ocultar' : 'Ver'}
                 </button>
               </div>
             </div>
 
-            {error && (
-              <p style={{ fontSize: '13px', color: 'var(--red)', paddingTop: '4px' }}>— {error}</p>
+            {info && (
+              <div style={{ padding: '12px 16px', background: '#f0f4f0', border: '1px solid #c5d5c5', borderRadius: '2px' }}>
+                <p style={{ fontSize: '13px', color: 'var(--accent-light)', lineHeight: 1.5 }}>{info}</p>
+              </div>
             )}
 
-            <button type="submit" disabled={loading} style={{
-              marginTop: '8px', padding: '16px', background: loading ? 'var(--fg-light)' : 'var(--bg-dark)',
-              color: 'var(--white)', border: 'none', fontSize: '12px', fontWeight: 500,
-              letterSpacing: '0.2em', textTransform: 'uppercase', cursor: loading ? 'not-allowed' : 'pointer',
-              transition: 'background .2s'
-            }}>
+            {error && (
+              <div style={{ padding: '12px 16px', background: '#fdf0f0', border: '1px solid #f5c5c5', borderRadius: '2px' }}>
+                <p style={{ fontSize: '13px', color: 'var(--red)', lineHeight: 1.5 }}>{error}</p>
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              style={{ marginTop: '8px', padding: '16px', background: loading ? 'var(--fg-light)' : 'var(--bg-dark)', color: 'var(--white)', border: 'none', fontSize: '12px', fontWeight: 500, letterSpacing: '0.2em', textTransform: 'uppercase', cursor: loading ? 'not-allowed' : 'pointer', transition: 'background .2s' }}
+            >
               {loading ? 'Entrando...' : 'Iniciar sesión'}
             </button>
 

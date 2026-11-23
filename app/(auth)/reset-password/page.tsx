@@ -79,7 +79,7 @@ export default function ResetPasswordPage() {
           <div style={{ textAlign: 'center', zIndex: 1, position: 'relative' }}>
             <div style={{ fontSize: '60px', marginBottom: '20px' }}>🌿</div>
             <h1 style={{ fontSize: '40px', fontWeight: '700', color: '#fff', margin: '0 0 14px', letterSpacing: '-1px' }}>
-              Sazonia
+              Salvia
             </h1>
             <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '15px', lineHeight: '1.7', maxWidth: '260px', margin: '0 auto' }}>
               Crea una nueva contraseña segura para tu cuenta.
@@ -102,7 +102,7 @@ export default function ResetPasswordPage() {
                     Nueva contraseña
                   </h2>
                   <p style={{ color: '#6b7280', fontSize: '14px', margin: 0 }}>
-                    Elige una contraseña segura para tu cuenta de Sazonia.
+                    Elige una contraseña segura para tu cuenta de Salvia.
                   </p>
                 </div>
 

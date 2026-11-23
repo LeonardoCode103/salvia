@@ -1,89 +1,38 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-// ============================================
-// MODO DEMO — sin API key de Claude
-// Cuando tengas los $5, descomenta el bloque
-// de Claude y comenta el bloque de DEMO
-// ============================================
-
-const recetasDemo: Record<string, object[]> = {
-  default: [
-    {
-      nombre: 'Sopa de verduras casera',
-      tiempo: '30 minutos',
-      porciones: 4,
-      dificultad: 'Fácil',
-      descripcion: 'Una sopa reconfortante con las verduras que tienes en casa.',
-      ingredientes: [
-        '2 zanahorias medianas',
-        '2 papas medianas',
-        '1 cebolla',
-        '2 dientes de ajo',
-        '1 litro de caldo de pollo o agua',
-        'Sal y pimienta al gusto',
-        'Cilantro fresco'
-      ],
-      pasos: [
-        'Lava y corta todas las verduras en cubos medianos.',
-        'En una olla calienta un poco de aceite y sofríe la cebolla y el ajo por 3 minutos.',
-        'Agrega las zanahorias y papas, revuelve bien.',
-        'Vierte el caldo o agua y deja hervir a fuego medio por 20 minutos.',
-        'Sazona con sal y pimienta. Sirve con cilantro fresco.'
-      ],
-      consejo: 'Puedes agregar cualquier verdura que tengas disponible.',
-      apta_para: ['ninguna', 'diabetes', 'hipertension', 'colesterol']
-    },
-    {
-      nombre: 'Arroz con huevo y verduras',
-      tiempo: '20 minutos',
-      porciones: 2,
-      dificultad: 'Muy fácil',
-      descripcion: 'Un platillo rápido, nutritivo y delicioso con lo básico de tu cocina.',
-      ingredientes: [
-        '1 taza de arroz',
-        '2 huevos',
-        '1 cebolla pequeña',
-        '1 zanahoria',
-        'Aceite, sal y pimienta',
-        'Salsa de soya (opcional)'
-      ],
-      pasos: [
-        'Cocina el arroz según las instrucciones del empaque.',
-        'Mientras tanto, corta la cebolla y zanahoria en cuadritos pequeños.',
-        'En un sartén con aceite, sofríe la cebolla y zanahoria por 5 minutos.',
-        'Empuja las verduras a un lado y bate los huevos en el mismo sartén.',
-        'Mezcla todo con el arroz cocido. Sazona y sirve caliente.'
-      ],
-      consejo: 'Agrega unas gotas de limón para darle más sabor.',
-      apta_para: ['ninguna', 'diabetes', 'colesterol']
-    },
-    {
-      nombre: 'Ensalada fresca con aderezo de limón',
-      tiempo: '10 minutos',
-      porciones: 2,
-      dificultad: 'Muy fácil',
-      descripcion: 'Ligera, fresca y perfecta para cualquier hora del día.',
-      ingredientes: [
-        '2 jitomates',
-        '1 pepino',
-        '1/2 cebolla morada',
-        'Jugo de 1 limón',
-        '2 cucharadas de aceite de oliva',
-        'Sal, pimienta y orégano',
-        'Aguacate (opcional)'
-      ],
-      pasos: [
-        'Lava y corta el jitomate, pepino y cebolla en cubos.',
-        'Mezcla todo en un tazón grande.',
-        'Prepara el aderezo: limón, aceite, sal, pimienta y orégano.',
-        'Vierte el aderezo sobre la ensalada y mezcla bien.',
-        'Sirve inmediatamente o refrigera 10 minutos antes de servir.'
-      ],
-      consejo: 'Ideal como acompañamiento o plato principal ligero.',
-      apta_para: ['ninguna', 'diabetes', 'hipertension', 'colesterol', 'enfermedad_celiaca']
-    }
-  ]
+const condicionTexto: Record<string, string> = {
+  ninguna: 'sin restricciones especiales de salud',
+  diabetes: 'diabetes tipo 2 (evitar azúcares simples, harinas refinadas y alimentos de alto índice glucémico; priorizar fibra, proteínas magras y grasas saludables)',
+  hipertension: 'hipertensión arterial (evitar sal en exceso, embutidos y alimentos procesados; priorizar alimentos ricos en potasio y verduras frescas)',
+  colesterol: 'colesterol alto (evitar grasas saturadas, fritos y lácteos enteros; priorizar omega-3, fibra soluble y aceite de oliva)',
+  enfermedad_celiaca: 'enfermedad celíaca (sin gluten: evitar trigo, cebada y centeno; usar arroz, maíz, papa o avena certificada sin gluten)',
+  otro: 'condición especial de salud (preparar recetas saludables, equilibradas y bajas en grasas saturadas y sodio)',
 }
+
+const PROMPT = (condicion: string, ingredientes: string) => `Eres chef y nutriólogo experto. El usuario tiene: ${condicion}.
+Los ingredientes disponibles son: ${ingredientes}
+
+Genera EXACTAMENTE 3 recetas usando principalmente esos ingredientes. Responde SOLO con JSON válido, sin markdown ni texto adicional.
+
+REGLAS OBLIGATORIAS para los pasos:
+- Cada paso contiene UNA SOLA acción física
+- Incluye tiempo exacto ("3 minutos", "30 segundos")
+- Incluye temperatura o nivel de fuego si aplica ("fuego medio-alto", "180°C")
+- Incluye señal visual de cuándo está listo ("hasta que esté dorado", "hasta que el agua se absorba", "hasta que al pincharlo el tenedor entre sin resistencia")
+- Escribe como si la persona jamás hubiera cocinado
+
+[
+  {
+    "nombre": "Nombre atractivo de la receta",
+    "tiempo": "X minutos",
+    "porciones": 2,
+    "dificultad": "Fácil",
+    "descripcion": "Descripción apetitosa en 1-2 oraciones",
+    "ingredientes": ["cantidad + ingrediente exacto"],
+    "pasos": ["Paso con acción única, tiempo exacto y señal visual de cuándo está listo"],
+    "consejo": "Tip nutricional específico para la condición de salud del usuario"
+  }
+]`
 
 export async function POST(req: NextRequest) {
   try {
@@ -93,65 +42,116 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Escribe al menos un ingrediente' }, { status: 400 })
     }
 
-    // ============================================
-    // DEMO — recetas de ejemplo
-    // Simula un delay real de IA
-    // ============================================
-    await new Promise(resolve => setTimeout(resolve, 1500))
-    const recetas = recetasDemo.default
+    const apiKey = process.env.GEMINI_API_KEY
+    const condicion = condicionTexto[condicion_salud] ?? condicionTexto.ninguna
 
-    // ============================================
-    // CLAUDE REAL — descomenta cuando tengas la key
-    // ============================================
-    /*
-    const Anthropic = (await import('@anthropic-ai/sdk')).default
-    const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
-
-    const condicionTexto: Record<string, string> = {
-      ninguna: 'sin restricciones especiales',
-      diabetes: 'diabetes tipo 2 (evitar azúcares simples, harinas refinadas, alimentos de alto índice glucémico)',
-      hipertension: 'hipertensión (evitar sal en exceso, embutidos, alimentos procesados)',
-      colesterol: 'colesterol alto (evitar grasas saturadas, fritos, lácteos enteros)',
-      enfermedad_celiaca: 'enfermedad celíaca (sin gluten, evitar trigo, cebada, centeno)',
-      otro: 'condición especial de salud'
+    if (!apiKey || apiKey.startsWith('aqui_')) {
+      await new Promise(resolve => setTimeout(resolve, 1200))
+      return NextResponse.json({ recetas: recetasDemo, modo: 'demo' })
     }
 
-    const mensaje = await client.messages.create({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 2000,
-      messages: [{
-        role: 'user',
-        content: `Eres un nutriólogo experto. El usuario tiene: ${condicionTexto[condicion_salud] || 'sin restricciones'}.
+    const geminiRes = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: PROMPT(condicion, ingredientes) }] }],
+          generationConfig: { temperature: 0.7, maxOutputTokens: 2500 },
+        }),
+      }
+    )
 
-Los ingredientes que tiene disponibles son: ${ingredientes}
+    if (!geminiRes.ok) {
+      console.error('Gemini error:', await geminiRes.text())
+      return NextResponse.json({ recetas: recetasDemo, modo: 'demo' })
+    }
 
-Genera exactamente 3 recetas en formato JSON. Responde SOLO con el JSON, sin texto adicional, sin markdown.
+    const data = await geminiRes.json()
+    const texto: string = data.candidates?.[0]?.content?.parts?.[0]?.text ?? ''
+    const jsonText = texto.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
+    const recetas = JSON.parse(jsonText)
 
-Formato requerido:
-[
-  {
-    "nombre": "Nombre de la receta",
-    "tiempo": "X minutos",
-    "porciones": 2,
-    "dificultad": "Fácil/Media/Difícil",
-    "descripcion": "Descripción breve apetitosa",
-    "ingredientes": ["ingrediente 1", "ingrediente 2"],
-    "pasos": ["Paso 1 detallado", "Paso 2 detallado"],
-    "consejo": "Tip nutricional o de cocina",
-    "apta_para": ["condición1"]
-  }
-]`
-      }]
-    })
-
-    const texto = mensaje.content[0].type === 'text' ? mensaje.content[0].text : ''
-    const recetas = JSON.parse(texto.replace(/```json|```/g, '').trim())
-    */
-
-    return NextResponse.json({ recetas, modo: 'demo' })
-
+    return NextResponse.json({ recetas, modo: 'ia' })
   } catch (error) {
     console.error('Error:', error)
-    return NextResponse.json({ error: 'Error generando recetas' }, { status: 500 })
+    return NextResponse.json({ recetas: recetasDemo, modo: 'demo' })
   }
 }
+
+const recetasDemo = [
+  {
+    nombre: 'Sopa de verduras casera',
+    tiempo: '30 minutos',
+    porciones: 4,
+    dificultad: 'Fácil',
+    descripcion: 'Una sopa reconfortante con las verduras que tienes en casa. Ligera y llena de nutrientes.',
+    ingredientes: [
+      '2 zanahorias medianas',
+      '2 papas medianas',
+      '1 cebolla blanca',
+      '2 dientes de ajo',
+      '1 litro de agua o caldo de pollo bajo en sodio',
+      'Sal y pimienta al gusto',
+      'Cilantro fresco',
+    ],
+    pasos: [
+      'Pela y corta las zanahorias, papas y cebolla en cubos de 2 cm. Aplasta los dientes de ajo con la hoja del cuchillo. Reserva todo junto.',
+      'Calienta 1 cucharada de aceite en una olla grande a fuego medio por 1 minuto, hasta que al inclinar la olla el aceite se mueva libremente.',
+      'Agrega la cebolla y el ajo al aceite. Sofríe 3–4 minutos sin dejar de mover, hasta que la cebolla esté translúcida (como cristal) y los bordes empiecen a dorarse.',
+      'Agrega las zanahorias y papas. Mezcla y cocina 2 minutos más, hasta que las verduras tomen un poco de color dorado en los bordes.',
+      'Vierte 1 litro de agua o caldo. Sube el fuego a alto y espera a que hierva; verás burbujas grandes y constantes (aprox. 5 minutos).',
+      'Baja el fuego a medio-bajo y cocina sin tapar 20 minutos, hasta que al pinchar una papa con un tenedor entre sin resistencia.',
+      'Apaga el fuego. Prueba y ajusta sal y pimienta. Sirve caliente con cilantro fresco picado encima.',
+    ],
+    consejo: 'Usa caldo bajo en sodio o agua en lugar de caldo regular. Las verduras dan suficiente sabor con hierbas frescas sin necesitar sal extra.',
+  },
+  {
+    nombre: 'Arroz con huevo y verduras',
+    tiempo: '20 minutos',
+    porciones: 2,
+    dificultad: 'Muy fácil',
+    descripcion: 'Un platillo rápido, nutritivo y completo con lo básico que tienes en casa.',
+    ingredientes: [
+      '1 taza de arroz blanco',
+      '2 huevos',
+      '1 cebolla pequeña',
+      '1 zanahoria mediana',
+      '1 cucharada de aceite',
+      'Sal y pimienta al gusto',
+    ],
+    pasos: [
+      'Pon el arroz en una olla con 2 tazas de agua y una pizca de sal. Tapa y cocina a fuego alto hasta que hierva (3–4 min).',
+      'En cuanto hierva, baja el fuego al mínimo y cocina tapado 15 minutos más, hasta que el agua se absorba por completo y el arroz esté esponjoso.',
+      'Mientras el arroz cuece, pela la zanahoria y córtala en cubitos de 1 cm. Corta la cebolla en cuadros pequeños de 5 mm.',
+      'Calienta 1 cucharada de aceite en un sartén a fuego medio-alto por 1 minuto.',
+      'Agrega la cebolla y zanahoria. Cocina 5 minutos moviendo cada 30 segundos, hasta que la zanahoria esté tierna al pincharla y la cebolla esté dorada.',
+      'Empuja las verduras hacia los bordes del sartén. En el centro, bate los 2 huevos directamente y revuelve rápido con una espátula durante 2 minutos, hasta que ya no quede parte líquida.',
+      'Agrega el arroz cocido al sartén. Mezcla todo durante 1 minuto a fuego medio hasta integrar bien. Prueba y ajusta sal y pimienta.',
+    ],
+    consejo: 'Para bajar el índice glucémico, sustituye el arroz blanco por arroz integral o de coliflor rallado. El huevo aporta proteína completa que ayuda a estabilizar el azúcar en sangre.',
+  },
+  {
+    nombre: 'Ensalada fresca con aderezo de limón',
+    tiempo: '10 minutos',
+    porciones: 2,
+    dificultad: 'Muy fácil',
+    descripcion: 'Ligera, fresca y perfecta en cualquier momento. Lista en menos de 10 minutos.',
+    ingredientes: [
+      '2 jitomates maduros',
+      '1 pepino mediano',
+      '1/2 cebolla morada',
+      'Jugo de 1 limón',
+      '2 cucharadas de aceite de oliva',
+      'Sal, pimienta negra y orégano seco',
+    ],
+    pasos: [
+      'Lava los jitomates y el pepino bajo agua fría durante 30 segundos, frotando con las manos para quitar residuos.',
+      'Corta los jitomates en cubos de 2 cm. Corta el pepino en rodajas de medio centímetro. Corta la cebolla morada en aros finos. Coloca todo en un tazón grande.',
+      'En un vaso pequeño, mezcla el jugo de limón, el aceite de oliva, una pizca generosa de sal, pimienta y media cucharadita de orégano. Bate con un tenedor hasta que quede homogéneo (sin separarse el aceite del limón).',
+      'Vierte el aderezo sobre las verduras y mezcla con una cuchara grande hasta que todo quede cubierto.',
+      'Refrigera 10 minutos antes de servir para que los sabores se integren, o sirve de inmediato.',
+    ],
+    consejo: 'El pepino y el jitomate son muy bajos en calorías y tienen casi nada de azúcar. Son ideales como colación o guarnición para personas con diabetes o hipertensión.',
+  },
+]
