@@ -112,6 +112,8 @@ input:-webkit-autofill:focus {
 
   .salvia-bottom-nav { display: flex; }
   .salvia-bottom-nav-spacer { display: block; }
+
+  .top-nav-links { gap: 16px !important; }
 }
 
 @media (min-width: 768px) {

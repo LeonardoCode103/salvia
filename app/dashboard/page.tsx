@@ -120,7 +120,7 @@ export default function DashboardPage() {
         <p style={{ fontFamily: 'var(--font-display)', fontSize: '22px', fontWeight: 400, color: 'var(--fg)', letterSpacing: '0.05em' }}>
           Salvia
         </p>
-        <div style={{ display: 'flex', gap: '32px', alignItems: 'center' }}>
+        <div className="top-nav-links" style={{ display: 'flex', gap: '32px', alignItems: 'center' }}>
           <button onClick={() => router.push('/recetas')} style={{ background: 'none', border: 'none', fontSize: '12px', color: 'var(--fg-muted)', cursor: 'pointer', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Recetas</button>
           <button onClick={() => router.push('/ia-ingredientes')} style={{ background: 'none', border: 'none', fontSize: '12px', color: 'var(--fg-muted)', cursor: 'pointer', letterSpacing: '0.1em', textTransform: 'uppercase' }}>IA</button>
           <button onClick={() => router.push('/onchain')} style={{ background: 'none', border: 'none', fontSize: '12px', color: 'var(--fg-muted)', cursor: 'pointer', letterSpacing: '0.1em', textTransform: 'uppercase' }}>On-chain</button>
