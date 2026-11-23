@@ -185,5 +185,5 @@ anchor test
 
 ## Identificación
 
-- Nombre para el certificado: _pendiente_
-- Correo de registro: _pendiente_
+- Nombre para el certificado: Leonardo Balbuena Bravo
+- Correo de registro: leob3870@gmail.com
