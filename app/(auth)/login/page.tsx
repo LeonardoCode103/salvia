@@ -30,6 +30,11 @@ function LoginForm() {
   const [form, setForm] = useState({ email: '', password: '' })
 
   useEffect(() => {
+    // Enlaces de confirmación que llegan aquí con la sesión en el fragmento (#access_token=...)
+    if (/access_token=|error_description=/.test(window.location.hash)) {
+      router.replace(`/auth/callback-client${window.location.hash}`)
+      return
+    }
     const mensaje = searchParams.get('mensaje')
     if (mensaje === 'link_expirado')
       setInfo('El enlace de confirmación expiró. Regístrate de nuevo o pide otro correo.')
@@ -37,7 +42,7 @@ function LoginForm() {
       setInfo('El enlace no es válido. Intenta registrarte de nuevo.')
     else if (mensaje === 'verificado')
       setInfo('✓ Cuenta verificada. Inicia sesión para continuar.')
-  }, [searchParams])
+  }, [searchParams, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

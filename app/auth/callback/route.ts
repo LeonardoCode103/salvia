@@ -18,7 +18,9 @@ export async function GET(request: NextRequest) {
     if (!error) {
       return NextResponse.redirect(`${origin}/dashboard`)
     }
-    return NextResponse.redirect(`${origin}/login?mensaje=link_expirado`)
+    // Supabase ya confirmó el correo antes de redirigir; el intercambio falla si el enlace
+    // se abre en otro navegador (sin el verificador PKCE), así que solo falta iniciar sesión.
+    return NextResponse.redirect(`${origin}/login?mensaje=verificado`)
   }
 
   // Token-style links (#access_token=...) — manejados client-side
