@@ -296,7 +296,7 @@ export default function DashboardPage() {
       {/* Desafío semanal */}
       <div style={{ borderBottom: '1px solid var(--border)' }}>
         <div className="page-body" style={{ paddingTop: '48px', paddingBottom: '48px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1px', background: 'var(--border)' }}>
+          <div className="dashboard-extra" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1px', background: 'var(--border)' }}>
             <div style={{ background: 'var(--bg)', padding: '40px' }}>
               <p style={{ fontSize: '11px', fontWeight: 500, color: 'var(--fg-light)', letterSpacing: '0.25em', textTransform: 'uppercase', marginBottom: '20px' }}>
                 Desafío de la semana

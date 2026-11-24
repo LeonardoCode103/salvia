@@ -114,6 +114,9 @@ input:-webkit-autofill:focus {
   .salvia-bottom-nav-spacer { display: block; }
 
   .top-nav-links { gap: 16px !important; }
+
+  .dashboard-extra { grid-template-columns: 1fr !important; }
+  .dashboard-extra > div { padding: 28px 24px !important; }
 }
 
 @media (min-width: 768px) {
