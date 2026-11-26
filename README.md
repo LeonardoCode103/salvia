@@ -113,6 +113,11 @@ cp .env.example .env.local
 Las variables de `.env.example` solo son necesarias para la parte off-chain (inicio de sesión con
 Supabase e IA con Gemini). **La ruta `/onchain` funciona sin ellas.**
 
+Para la parte off-chain, la base de datos se prepara ejecutando
+[`SETUP-supabase.sql`](SETUP-supabase.sql) en el SQL Editor de Supabase: crea la tabla de
+comentarios y el contador de likes, y configura los permisos de la API y las políticas RLS. Se
+puede volver a ejecutar sin riesgo, por ejemplo después de restaurar un proyecto pausado.
+
 ## Ejecución
 
 ```bash
